@@ -227,8 +227,6 @@ int compare_urimaps ( struct urimap *map1, struct urimap *map2 ) {
 		}
 		else if ( action == ACT_ID ) {
 			char *s = (*ilist)->string[0];
-			//const char *n = (*elist)->mustbe == RE_STRING ? ALPHA : NUMS;
-			//int nl = strlen( n );
 			int range[ 2 ];
 			if ( (*elist)->mustbe == RE_STRING )
 				range[0] = 33, range[1] = 126;
@@ -248,12 +246,10 @@ int compare_urimaps ( struct urimap *map1, struct urimap *map2 ) {
 			//These should just match one to one
 			char *ii = *(*ilist)->string;
 			char *ee = *(*elist)->string;
-			if ( !ii ) { 
+			if ( !ii )
 				return 0;
-			}
-			else if ( strlen( ii ) != strlen( ee ) ) {
+			else if ( strlen( ii ) != strlen( ee ) )
 				return 0;
-			}
 			else if ( memcmp( ii, ee, strlen( ee ) ) != 0 ) {
 				return 0;
 			}
