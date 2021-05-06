@@ -120,7 +120,7 @@ struct request {
 , { "/2",                      "NNNNNNNNYNNNN" }
 , { "/47",                     "NNNNNNNNYNNNN" }
 , { "/route",                  "NNYYYNNNYNNYN" }
-, { "/route/3",                "NNNNNYNYNYNNY" }
+, { "/route/3",                "NNNNNYYYNYNNY" }
 , { "/route/bashful",          "NNNNNYYNNYNNY" }
 , { "/route/bashful/jackpot",  "NNNNNNNNNNYNN" }
 , { "/route/333/jackpot",      "NNNNNNNNNNYNN" }

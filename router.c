@@ -29,7 +29,7 @@
 	fprintf( stderr, __VA_ARGS__ )
 #endif
 
-
+#if 0
 static const char NUMS[] = 
 	"0123456789";
 
@@ -37,8 +37,8 @@ static const char NUMS[] =
 static const char ALPHA[] = 
 	"abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	;
-
+	"0123456789";
+#endif
 
 static const int maps[] = {
 	[':'] = ACT_ID,
@@ -226,19 +226,22 @@ int compare_urimaps ( struct urimap *map1, struct urimap *map2 ) {
 			}	
 		}
 		else if ( action == ACT_ID ) {
-			char *s = (*ilist)->string[0];				
-			const char *n = (*elist)->mustbe == RE_STRING ? ALPHA : NUMS;
-			int nl = strlen( n );
+			char *s = (*ilist)->string[0];
+			//const char *n = (*elist)->mustbe == RE_STRING ? ALPHA : NUMS;
+			//int nl = strlen( n );
+			int range[ 2 ];
+			if ( (*elist)->mustbe == RE_STRING )
+				range[0] = 33, range[1] = 126;
+			else { //only numbers
+				range[0] = 48, range[1] = 57;
+			}
+			
 			if ( !s ) {
 				return 0;
 			}
+
 			if ( (*elist)->mustbe != RE_ANY ) {
-				while ( *s ) {
-					if ( !memchr( n, *s, nl ) ) {
-						return 0;  
-					}
-					s++;
-				}
+				for ( ; *s; s++ ) if ( *s < range[0] || *s > range[1] ) return 0; 
 			}
 		}
 		else if ( action == ACT_RAW ) {
