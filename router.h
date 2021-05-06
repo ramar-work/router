@@ -58,4 +58,8 @@ const char * route_rword( void * );
 #define route_resolve( a, b, c ) \
 	route_complex_resolve( a, (void **)b, c )
 #endif
+
+#ifdef DEBUG_H
+void dump_urimap( struct urimap * );
+#endif
 #endif

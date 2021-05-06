@@ -1,11 +1,13 @@
 #include "router.h"
+#include <strings.h>
+
+#include <unistd.h>
 
 #define router_add_item(LIST, ELEMENT, SIZE, LEN) \
 	add_item_to_list( (void ***)LIST, ELEMENT, sizeof( SIZE ), LEN )
 
 #ifndef DEBUG_H
- 
-#define DUMPMATCH( NUM )
+ #define DUMPMATCH( NUM )
  #define RDUMPACTION( NUM )
  #define FPRINTF(...)
 #else
@@ -92,6 +94,8 @@ static void free_urimap ( struct urimap *mmap ) {
 }
 
 
+
+//...
 char * router_strdup ( char *c ) {
 	char *p = malloc( strlen( c ) + 1 ); 
 	memset( p, 0, strlen( c ) + 1 );
@@ -100,35 +104,29 @@ char * router_strdup ( char *c ) {
 }
 
 
+
 //Build a data mapped URI
 static struct urimap * build_urimap ( struct urimap *map, const char *uri ) {
-
 	//Define
 	zWalker r = {0};
 	struct element **list = NULL;
 	int listlen = 0;
 
 	//TODO: add a condition to return if '/' is the only character
-	#if 1
 	if ( *uri == '/' && strlen( uri ) == 1 ) {
 		map->name = "/", map->listlen = 0, map->list = NULL;	
 		return map;
 	}
-	#endif
 
 	while ( strwalk( &r, uri, "/" ) ) {
 		unsigned char *p = (unsigned char *)&uri[ r.pos ];
 		struct element *e = NULL;
 
 		//Skip results that are just one '/'
-		if ( *p == '/' || !r.size ) {
-			continue;
-		}
+		if ( *p == '/' || !r.size ) continue; 
 
 		//Generate a new element
-		if ( !( e = create_element() ) ) {
-			return NULL;
-		}
+		if ( !( e = create_element() ) ) return NULL; 
 
 		//Count all the single characters and length
 		if ( maps[ *p ] == ACT_SINGLE )
@@ -143,7 +141,8 @@ static struct urimap * build_urimap ( struct urimap *map, const char *uri ) {
 			memset( &pp, 0, sizeof(zWalker) );
 			while ( memwalk( &pp, block, (unsigned char *)mb, r.size - 1, strlen(mb) ) ) {
 				char *b, buf[ 1024 ] = {0};
-				memcpy( buf, &block[ pp.pos ], pp.size );
+				int size = ( index( "},=", pp.chr ) || index( "}", *pp.ptr ) ) ? pp.size - 1 : pp.size;
+				memcpy( buf, &block[ pp.pos ], size );
 				b = router_strdup(buf);
 				router_add_item( &e->string, b, char *, &e->len );
 				if ( pp.chr == '}' ) {
@@ -162,9 +161,18 @@ static struct urimap * build_urimap ( struct urimap *map, const char *uri ) {
 			}
 		}
 		else {
-			char *b, buf[ 512 ] = {0};
 			e->type = ACT_RAW;
-			memcpy( buf, p, r.size );
+			char *b, buf[ 512 ] = {0};
+			int size = ( *r.ptr == '/' ) ? r.size - 1 : r.size;
+			memcpy( buf, p, ( r.chr == '/' && size > 1 ) ? --size : size );
+			//memcpy( buf, p, r.size );
+#if 0
+fprintf( stderr, "chr = '%c', ",  r.chr );
+fprintf( stderr, "ptr = '%c', ", *r.ptr );
+fprintf( stderr, "copied this on ACT_RAW\n" );
+write( 2, buf, r.size );
+getchar();
+#endif
 			b = router_strdup( buf );
 			router_add_item( &e->string, b, char *, &e->len );
 		}
@@ -175,15 +183,10 @@ static struct urimap * build_urimap ( struct urimap *map, const char *uri ) {
 	}
 
 	//Set the urimap and save for later...
-	if ( !listlen ) {
-		map->name = "/";
-		map->listlen = 0;	
-		map->list = NULL;	
-	}
+	if ( !listlen )
+		map->name = "/", map->listlen = 0, map->list = NULL;	
 	else {
-		map->name = uri;	
-		map->list = list;	
-		map->listlen = listlen;
+		map->name = uri, map->list = list, map->listlen = listlen;
 	}
 	return map;
 }
@@ -198,7 +201,6 @@ int compare_urimaps ( struct urimap *map1, struct urimap *map2 ) {
 		return 0;
 	}
 
-#if 1
 	while ( *elist && *ilist ) {
 		int action = (*elist)->type;
 		if ( action == ACT_SINGLE ) {
@@ -258,7 +260,6 @@ int compare_urimaps ( struct urimap *map1, struct urimap *map2 ) {
 		}
 		elist++, ilist++;
 	}
-#endif
 	return 1;
 }
 
@@ -297,6 +298,12 @@ const char * route_resolve ( const char *uri, const char *rname ) {
 		free_urimap( &urimap ); 
 		return NULL;	
 	}
+#if 0
+	fprintf( stderr, "URI map for (uri)\n" );
+	dump_urimap( &urimap );
+	fprintf( stderr, "URI map for (rname)\n" );
+	dump_urimap( &cmap );
+#endif
 
 	//Can these really match?
 	if ( compare_urimaps( &cmap, &urimap ) ) {
