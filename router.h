@@ -43,6 +43,20 @@ struct urimap {
 	struct element **list;
 };
 
+#if 0
+struct kvmap {
+	const char key[ 64 ];
+	int klen;
+	const char value[ 64 ];
+	int vlen;
+};
+
+typedef struct zRouter {
+	const char *uri, *cmpuri;
+	struct urimap uurimap;
+	struct urimap curimap;
+} zRouter;
+#endif
 
 const char * route_resolve ( const char *, const char * );
 void * route_complex_resolve ( const char *, void **, const char *(*)(void *) );

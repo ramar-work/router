@@ -270,6 +270,13 @@ const char * route_rword ( void *f ) {
 }
 
 
+//Return an array of key->value pairs
+const char *** urlpart ( const char *uri, const char *cmp, char **url ) {
+	return NULL;
+} 
+
+
+
 
 //Do a quick single resolution
 const char * route_resolve ( const char *uri, const char *rname ) {
